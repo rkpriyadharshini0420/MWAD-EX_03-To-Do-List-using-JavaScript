@@ -1,5 +1,5 @@
-# MWAD-EX_03-To-Do-List-using-JavaScript
-## Date:
+# Ex03 To-Do List using JavaScript
+## Date:20.08.2025
 
 ## AIM
 To create a To-do Application with all features using JavaScript.
@@ -38,161 +38,153 @@ Upload to GitHub Pages for free hosting.
 ## PROGRAM
 
 # Index.html
+
 ```
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>To-Do App</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
-  <main class="todo-container">
-    <h2>To-Do List ✅</h2>
-
-    <form id="todoForm" class="todo-input" autocomplete="off">
-      <input type="text" id="taskInput" placeholder="Add a new task..." />
-      <button type="submit">Add</button>
-    </form>
-
-    <ul id="taskList" class="todo-list"></ul>
-
-    <div class="toolbar">
-      <div class="filters">
-        <button data-filter="all" class="active">All</button>
-        <button data-filter="active">Active</button>
-        <button data-filter="completed">Completed</button>
-      </div>
-      <div class="actions">
-        <span id="itemsLeft">0 items left</span>
-        <button id="clearCompleted">Clear Completed</button>
-      </div>
+  <div class="todo-container">
+    <h1> My To-Do List</h1>
+    <div class="input-section">
+      <input type="text" id="taskInput" placeholder="Enter a new task">
+      <button onclick="addTask()">Add</button>
     </div>
-  </main>
+    <ul id="taskList"></ul>
+  </div>
 
-  <script>
-    let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-    let filter = "all";
-
-    const els = {
-      form: document.getElementById("todoForm"),
-      input: document.getElementById("taskInput"),
-      list: document.getElementById("taskList"),
-      filters: document.querySelector(".filters"),
-      clearCompleted: document.getElementById("clearCompleted"),
-      itemsLeft: document.getElementById("itemsLeft"),
-    };
-
-    function save() { localStorage.setItem("tasks", JSON.stringify(tasks)); }
-    function itemsLeftCount() { return tasks.filter(t => !t.completed).length; }
-
-    function render() {
-      els.list.innerHTML = "";
-      const filtered = tasks.filter(t =>
-        filter === "active" ? !t.completed :
-        filter === "completed" ? t.completed : true
-      );
-      for (const task of filtered) {
-        const li = document.createElement("li");
-        li.className = "todo-item";
-        li.dataset.id = task.id;
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = task.completed;
-        checkbox.addEventListener("change", () => toggleTask(task.id));
-
-        const span = document.createElement("span");
-        span.className = "todo-text" + (task.completed ? " completed" : "");
-        span.textContent = task.text;
-        span.addEventListener("dblclick", () => startEdit(task.id, span));
-
-        const actions = document.createElement("div");
-        actions.className = "item-actions";
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "✏️";
-        editBtn.onclick = () => startEdit(task.id, span);
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "🗑️";
-        delBtn.onclick = () => removeTask(task.id);
-        actions.append(editBtn, delBtn);
-
-        li.append(checkbox, span, actions);
-        els.list.append(li);
-      }
-      els.itemsLeft.textContent = `${itemsLeftCount()} item${itemsLeftCount() !== 1 ? "s" : ""} left`;
-      document.querySelectorAll(".filters button").forEach(b => {
-        b.classList.toggle("active", b.dataset.filter === filter);
-      });
-    }
-
-    function addTask(text) {
-      const trimmed = text.trim();
-      if (!trimmed) return;
-      tasks.push({ id: Date.now().toString(), text: trimmed, completed: false });
-      save(); render();
-    }
-    function removeTask(id) { tasks = tasks.filter(t => t.id !== id); save(); render(); }
-    function toggleTask(id) { const t = tasks.find(t => t.id === id); t.completed = !t.completed; save(); render(); }
-    function updateTask(id, newText) { const t = tasks.find(t => t.id === id); if (newText.trim()) { t.text = newText.trim(); save(); render(); } }
-
-    function startEdit(id, spanEl) {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.value = spanEl.textContent;
-      spanEl.replaceWith(input);
-      input.focus();
-      input.addEventListener("blur", () => updateTask(id, input.value));
-      input.addEventListener("keydown", e => { if (e.key === "Enter") updateTask(id, input.value); });
-    }
-
-    els.form.addEventListener("submit", e => { e.preventDefault(); addTask(els.input.value); els.input.value = ""; });
-    els.filters.addEventListener("click", e => { if (e.target.dataset.filter) { filter = e.target.dataset.filter; render(); } });
-    els.clearCompleted.addEventListener("click", () => { tasks = tasks.filter(t => !t.completed); save(); render(); });
-
-    render();
-  </script>
+  <script src="index.js"></script>
 </body>
 </html>
+
 ```
-# Style.css
+# Index.js
+````
+function addTask() {
+    const input = document.getElementById("taskInput");
+    const taskText = input.value.trim();
+    if (taskText === "") return;
+  
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span onclick="toggleComplete(this)">${taskText}</span>
+      <button onclick="deleteTask(this)">Delete</button>
+    `;
+    document.getElementById("taskList").appendChild(li);
+    input.value = "";
+  }
+  
+  function deleteTask(button) {
+    button.parentElement.remove();
+  }
+  
+  function toggleComplete(span) {
+    span.parentElement.classList.toggle("completed");
+  }
+  
+
+````
+# Index.css
 ```
-* { box-sizing: border-box; }
+
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f4f9;
-  display: flex;
-  justify-content: center;
-  padding: 40px;
-}
-.todo-container {
-  width: 400px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-h2 { text-align: center; margin: 0 0 16px; }
-.todo-input { display: flex; gap: 10px; }
-.todo-input input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
-.todo-input button { padding: 10px; border: none; background: #4caf50; color: white; border-radius: 6px; cursor: pointer; }
-.todo-list { list-style: none; padding: 0; margin-top: 20px; }
-.todo-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
-.todo-text.completed { text-decoration: line-through; color: gray; }
-.item-actions button { margin-left: 5px; cursor: pointer; }
-.filters { display: flex; gap: 8px; margin-top: 12px; }
-.filters button { border: none; background: #eee; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-.filters .active { background: #4caf50; color: white; }
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 14px; }
-.actions { display: flex; gap: 10px; align-items: center; }
+    font-family: 'Segoe UI', sans-serif;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    padding-top: 60px;
+  }
+  
+  .todo-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .input-section {
+    display: flex;
+    gap: 10px;
+  }
+  
+  input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  button {
+    padding: 10px 15px;
+    border: none;
+    background: #28a745;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background: #218838;
+  }
+  
+  ul {
+    margin-top: 20px;
+    list-style: none;
+    padding: 0;
+  }
+  
+  li {
+    background: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  li.completed {
+    text-decoration: line-through;
+    color: #777;
+  }
+  
+  li button {
+    background: #dc3545;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  li button:hover {
+    background: #c82333;
+  }
+  
+
 ```
 
 ## OUTPUT
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/9b933244-cc20-4257-b580-6135dd1aae4f" />
+![image](https://github.com/user-attachments/assets/03f1fbbd-1732-4927-8d03-57fa58f76d33)
 
+
+![image](https://github.com/user-attachments/assets/8aa2895f-0e20-4a87-9584-7f64d0085a4a)
+
+
+![image](https://github.com/user-attachments/assets/8b02e092-15aa-4257-adfd-c37767271dc6)
 
 ## RESULT
 The program for creating To-do list using JavaScript is executed successfully.
